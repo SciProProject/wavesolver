@@ -7,7 +7,21 @@ import numpy as np
 
 
 def run(filedir):
-    _input_reader(filedir)
+    x_val, potx = _potential_interpolate(filedir)
+    eigval, normwf = _schroedinger_equation_solver(filedir)
+    mat = np.empty((len(x_val), 2))
+    mat[:, 0] = x_val
+    mat[:, 1] = potx
+    np.savetxt("potentail.dat", mat)
+    mat2 = np.empty((len(x_val), len(normwf) + 1))
+    mat2[:, 0] = x_val
+    np.savetxt("wavefuncs.dat", mat2)
+    for i, val in enumerate(normwf):
+        mat2[i, 1:] = val
+    mat3 = np.empty((len(eigval), 1))
+    for i, val in enumerate(eigval):
+        mat3[i] = val
+    np.savetxt("energies.dat", mat3)
 
 
 def _input_reader(filedir):
@@ -21,6 +35,7 @@ def _input_reader(filedir):
            mass, interpdata, methode, x_inp, pot, eigmin, eigmax and
            nump used in solving the schroedinger equation.
     """
+    # Getting list of data
     with open(filedir, "r") as fp:
         initlist = fp.readlines()
         datalist = []
@@ -29,7 +44,7 @@ def _input_reader(filedir):
             part2 = part1[0].partition('\t')
             part3 = part2[0].partition('\n')
             datalist.append(part3[0])
-
+    # Exctracting data from list to make it usable
     mass = float(datalist[0])
     interpdata = datalist[1].split(' ')
     interpdata[:2] = [float(item) for item in interpdata[:2]]
@@ -99,8 +114,8 @@ def _schroedinger_equation_solver(filedir):
     offdia = np.full(len(potx) - 1, -coeff / 2)
     eigval, wavef = sl.eigh_tridiagonal(maindia, offdia)
     # Normalization of the wavefunctions
-    normw = np.empty((len(wavef), len(wavef)))
+    normwf = np.empty((len(wavef), len(wavef)))
     for i in range(len(wavef[0])):
         norm = step * sum(wavef[:, i]**2)
-        normw[:, i] = wavef[:, i] / norm**0.5
-    return eigval, normw
+        normwf[:, i] = wavef[:, i] / norm**0.5
+    return eigval, normwf
