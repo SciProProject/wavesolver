@@ -6,17 +6,30 @@ import scipy.interpolate as si
 import numpy as np
 
 
-def _unpack_list(datalist):
-    """makes the data in the list created by the communicator modul
-       function _input_reader usabel.
+def run(filedir):
+    _input_reader(filedir)
+
+
+def _input_reader(filedir):
+    """Collects data from the file the user iputs whitch is used to solve
+       the wavefunction in the solvers module.
 
        Args:
-           datalist = list created by the communicator modul function
-           input_reader.
+           filedir: directory of the inputfile
 
-       Returns: mass of partical
-
+       Returns:
+           mass, interpdata, methode, x_inp, pot, eigmin, eigmax and
+           nump used in solving the schroedinger equation.
     """
+    with open(filedir, "r") as fp:
+        initlist = fp.readlines()
+        datalist = []
+        for tup in enumerate(initlist):
+            part1 = tup[1].partition('#')
+            part2 = part1[0].partition('\t')
+            part3 = part2[0].partition('\n')
+            datalist.append(part3[0])
+
     mass = float(datalist[0])
     interpdata = datalist[1].split(' ')
     interpdata[:2] = [float(item) for item in interpdata[:2]]
@@ -46,8 +59,8 @@ def potential_interpolate(datalist):
     Returns:
         the interpolated potentials and their x values as ndarray.
     """
-    x_min, x_max, npoint = _unpack_list(datalist)[1]
-    methode, x_inp, pot = _unpack_list(datalist)[2:5]
+    x_min, x_max, npoint = _input_reader(filedir)[1]
+    methode, x_inp, pot = _input_reader(filedir)[2:5]
     if methode == "linear":
         func = si.interp1d(x_inp, pot)
         x_val = np.linspace(x_min, x_max, npoint)
@@ -73,8 +86,8 @@ def schroedinger_equation_solver(datalist):
     Returns:
         Eigenvalues and their normalized wavefunctions as ndarray.
     """
-    mass = _unpack_list(datalist)[0]
-    x_min, x_max, npoint = _unpack_list(datalist)[1]
+    mass = _input_reader(filedir)[0]
+    x_min, x_max, npoint = _input_reader(filedir)[1]
     step = (x_max - x_min) / npoint
     potx = potential_interpolate(datalist)[1]
     coeff = 1 / (mass * step**2)
