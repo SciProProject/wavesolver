@@ -48,7 +48,7 @@ def _input_reader(filedir):
     return mass, interpdata, methode, x_inp, pot, eigmin, eigmax, nump
 
 
-def potential_interpolate(datalist):
+def _potential_interpolate(filedir):
     """interpolates the potentail for a new range of x values from a
        given set of potentails.
 
@@ -76,7 +76,7 @@ def potential_interpolate(datalist):
     return x_val, potx
 
 
-def schroedinger_equation_solver(datalist):
+def _schroedinger_equation_solver(filedir):
     """Solves the schroedingerequation from a given set of potentials.
 
     Args:
@@ -89,7 +89,7 @@ def schroedinger_equation_solver(datalist):
     mass = _input_reader(filedir)[0]
     x_min, x_max, npoint = _input_reader(filedir)[1]
     step = (x_max - x_min) / npoint
-    potx = potential_interpolate(datalist)[1]
+    potx = _potential_interpolate(filedir)[1]
     coeff = 1 / (mass * step**2)
     # Calculation of the eigenvalues and wavefunctions
     maindia = np.array([])
