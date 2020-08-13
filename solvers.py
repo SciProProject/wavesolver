@@ -12,7 +12,7 @@ def run(filedir):
     mat = np.empty((len(x_val), 2))
     mat[:, 0] = x_val
     mat[:, 1] = potx
-    np.savetxt("output/potentail.dat", mat)
+    np.savetxt("output/potential.dat", mat)
     mat2 = np.empty((len(x_val), len(eigval) + 1))
     mat2[:, 0] = x_val
     for i, val in enumerate(eigval):
@@ -43,15 +43,16 @@ def _input_reader(filedir):
             part1 = tup[1].partition('#')
             part2 = part1[0].partition('\t')
             part3 = part2[0].partition('\n')
-            datalist.append(part3[0])
+            part4 = part3[0].rstrip()
+            datalist.append(part4)
     # Exctracting data from list to make it usable
     mass = float(datalist[0])
     interpdata = datalist[1].split(' ')
     interpdata[:2] = [float(item) for item in interpdata[:2]]
     interpdata[2] = int(interpdata[2])
     eigmin, eigmax = datalist[2].split(' ')
-    eigmin = float(eigmin)
-    eigmax = float(eigmax)
+    eigmin = int(eigmin)
+    eigmax = int(eigmax)
     methode = datalist[3]
     nump = float(datalist[4])
     x_inp = []
@@ -106,8 +107,8 @@ def _schroedinger_equation_solver(filedir):
     step = (x_max - x_min) / npoint
     potx = _potential_interpolate(filedir)[1]
     coeff = 1 / (mass * step**2)
-    eigmin = int(_input_reader(filedir)[5])
-    eigmax = int(_input_reader(filedir)[6])
+    eigmin = _input_reader(filedir)[5]
+    eigmax =_input_reader(filedir)[6]
     # Calculation of the eigenvalues and wavefunctions
     maindia = np.array([])
     for i, val in enumerate(potx):
