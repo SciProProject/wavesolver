@@ -6,7 +6,7 @@ import solvers as sol
 FILES = ["test_infpot.txt", "test_pot.txt", "test_harmonic.txt",
          "test_dualpot_lin.txt", "test_dualpot_scpline.txt",
          "test_asympot.txt"]
-ERROR = 1e-10
+ERROR = 1e-2
 
 
 @pytest.mark.parametrize("file", FILES)
@@ -21,24 +21,26 @@ def test_eigval(file):
     eigvallist = []
     if file == "test_infpot.txt":
         for n in range(eigmin, eigmax + 1):
-            eigval = h**2 / (8 * m * L**2) * n**2
+            eigval = (4 * np.pi**2 * h**2) / (8 * m * L**2) * n**2
             eigvallist.append(eigval)
     if file == "test_pot.txt":
         for n in range(eigmin, eigmax + 1):
             if n % 2 == 0:
-                eigval = h**2 / (8 * m * L**2) * (2 * n - 1)**2
+                eigval = (4 * np.pi**2 * h**2) / (8 * m * L**2) * (2 * n - 1)**2
             if n % 2 == 1:
-                eigval = h**2 / (8 * m * L**2) * (2 * n)**2
+                eigval = (4 * np.pi**2 * h**2) / (8 * m * L**2) * (2 * n)**2
             eigvallist.append(eigval)
     if file == "test_harmonic.txt":
-        for n in range(eigmin, eigmax + 1):
+        for n in range(eigmin - 1, eigmax):
             eigval = 1 / 2 * h * w * (n + 1 / 2)
             eigvallist.append(eigval)
-    if file == "test_harmonic.txt":
-        eigvallist = np.empty((1, eigmax - eigmin + 1))
-    if file == "test_harmonic.txt":
-        eigvallist = np.empty((1, eigmax - eigmin + 1))
-    if file == "test_harmonic.txt":
-        eigvallist = np.empty((1, eigmax - eigmin + 1))
+    if file == "test_dualpot_lin.txt":
+        eigvallist = np.ones((1, eigmax - eigmin + 1))
+    if file == "test_dualpot_scpline.txt":
+        eigvallist = np.ones((1, eigmax - eigmin + 1))
+    if file == "test_asympot.txt":
+        eigvallist = np.ones((1, eigmax - eigmin + 1))
     eigvalarray = np.array(eigvallist)
-    assert np.all(np.abs(eigvalarray - sol.run(filedir)) < ERROR)
+    sol.run(filedir)
+    testeigarray = np.loadtxt("output/energies.dat")
+    assert np.all(np.abs(eigvalarray - testeigarray) < ERROR)

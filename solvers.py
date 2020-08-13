@@ -15,8 +15,8 @@ def run(filedir):
     np.savetxt("output/potential.dat", mat)
     mat2 = np.empty((len(x_val), len(eigval) + 1))
     mat2[:, 0] = x_val
-    for i, val in enumerate(eigval):
-        mat2[1:, i] = val
+    for i, val in enumerate(np.transpose(normwf)):
+        mat2[:, i + 1] = val
     np.savetxt("output/wavefuncs.dat", mat2)
     mat3 = np.empty((len(eigval), 1))
     for i, val in enumerate(eigval):
@@ -108,16 +108,18 @@ def _schroedinger_equation_solver(filedir):
     potx = _potential_interpolate(filedir)[1]
     coeff = 1 / (mass * step**2)
     eigmin = _input_reader(filedir)[5]
-    eigmax =_input_reader(filedir)[6]
+    eigmax = _input_reader(filedir)[6]
     # Calculation of the eigenvalues and wavefunctions
     maindia = np.array([])
-    for i, val in enumerate(potx):
-        elem = coeff + val
+    for val in enumerate(potx):
+        elem = coeff + val[1]
         maindia = np.append(maindia, elem)
     offdia = np.full(len(potx) - 1, -coeff / 2)
-    eigval, wavef = sl.eigh_tridiagonal(maindia, offdia, False, 'i', (eigmin-1, eigmax-1), True, 0, 'auto')
+    eigval, wavef = sl.eigh_tridiagonal(maindia, offdia, False,
+                                        'i', (eigmin - 1, eigmax - 1),
+                                        True, 0.0, 'stebz')
     # Normalization of the wavefunctions
-    normwf = np.empty((len(wavef), len(wavef)))
+    normwf = np.empty((len(wavef), len(eigval)))
     for i in range(len(wavef[0])):
         norm = step * sum(wavef[:, i]**2)
         normwf[:, i] = wavef[:, i] / norm**0.5
