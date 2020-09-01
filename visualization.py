@@ -11,6 +11,8 @@ def visualization():
     eigv = np.loadtxt('output/energies.dat')
     pot = np.loadtxt('output/potential.dat')
     wavef = np.loadtxt('output/wavefuncs.dat')
+    
+    
     for i, val in enumerate(eigv):
         b = wavef[:, i+1] + val
         wavef[:, i+1] = b
@@ -18,6 +20,7 @@ def visualization():
 
     eigval = np.empty((len(pot[:,0]), len(eigv)+1))
     eigval[:, 0] = pot[:, 0]
+    
     for i, val in enumerate(eigv):
         eigval[:, i+1] = val
 

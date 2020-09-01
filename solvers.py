@@ -7,8 +7,9 @@ import numpy as np
 
 
 def run(filedir):
-    x_val, potx = _potential_interpolate(filedir)
-    eigval, normwf = _schroedinger_equation_solver(filedir)
+    mass, interpdata, methode, potar, eigmin, eigmax, nump = _input_reader(filedir)[:]
+    x_val, potx = _potential_interpolate(interpdata, methode, potar)
+    eigval, normwf = _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax)
     mat = np.empty((len(x_val), 2))
     mat[:, 0] = x_val
     mat[:, 1] = potx
@@ -32,39 +33,33 @@ def _input_reader(filedir):
            filedir: directory of the inputfile
 
        Returns:
-           mass, interpdata, methode, x_inp, pot, eigmin, eigmax and
+           mass, interpdata, methode, potar, eigmin, eigmax and
            nump used in solving the schroedinger equation.
     """
-    # Getting list of data
-    with open(filedir, "r") as fp:
-        initlist = fp.readlines()
-        datalist = []
-        for tup in enumerate(initlist):
-            part1 = tup[1].partition('#')
-            part2 = part1[0].partition('\t')
-            part3 = part2[0].partition('\n')
-            part4 = part3[0].rstrip()
-            datalist.append(part4)
-    # Exctracting data from list to make it usable
-    mass = float(datalist[0])
-    interpdata = datalist[1].split(' ')
-    interpdata[:2] = [float(item) for item in interpdata[:2]]
-    interpdata[2] = int(interpdata[2])
-    eigmin, eigmax = datalist[2].split(' ')
+    data = np.genfromtxt(filedir, dtype = str, delimiter = "/n")
+    
+    mass = data[0].astype(np.float)
+    x_min, x_max, npoint = data[1].split(' ')
+    x_min = float(x_min)
+    x_max = float(x_max)
+    npoint = int(npoint)
+    interpdata = [x_min, x_max, npoint]
+    eigmin, eigmax = data[2].split(' ') 
     eigmin = int(eigmin)
     eigmax = int(eigmax)
-    methode = datalist[3]
-    nump = float(datalist[4])
-    x_inp = []
-    pot = []
-    for i in range(5, len(datalist)):
-        xval, potval = datalist[i].split(' ')
-        x_inp.append(float(xval))
-        pot.append(float(potval))
-    return mass, interpdata, methode, x_inp, pot, eigmin, eigmax, nump
+    methode = data[3]
+    nump = data[4]
+    nump = int(nump)
+    potar = np.empty((nump, 2), dtype = float)
+    for i in range(0, nump):
+        x_inp, pot = data[5+i].split(' ')
+        potar[i,0] = x_inp
+        potar[i,1] = pot
+    
+    return mass, interpdata, methode, potar, eigmin, eigmax, nump
 
 
-def _potential_interpolate(filedir):
+def _potential_interpolate(interpdata, methode, potar):
     """interpolates the potentail for a new range of x values from a
        given set of potentails.
 
@@ -75,24 +70,22 @@ def _potential_interpolate(filedir):
     Returns:
         the interpolated potentials and their x values as ndarray.
     """
-    x_min, x_max, npoint = _input_reader(filedir)[1]
-    methode, x_inp, pot = _input_reader(filedir)[2:5]
     if methode == "linear":
-        func = si.interp1d(x_inp, pot)
-        x_val = np.linspace(x_min, x_max, npoint)
+        func = si.interp1d(potar[:,0], potar[:,1])
+        x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     if methode == "cspline":
-        func = si.CubicSpline(x_inp, pot)
-        x_val = np.linspace(x_min, x_max, npoint)
+        func = si.CubicSpline(potar[:,0], potar[:,1])
+        x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     if methode == "polynomial":
-        func = si.KroghInterpolator(x_inp, pot)
-        x_val = np.linspace(x_min, x_max, npoint)
+        func = si.KroghInterpolator(potar[:,0], potar[:,1])
+        x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     return x_val, potx
 
 
-def _schroedinger_equation_solver(filedir):
+def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
     """Solves the schroedingerequation from a given set of potentials.
 
     Args:
@@ -102,13 +95,9 @@ def _schroedinger_equation_solver(filedir):
     Returns:
         Eigenvalues and their normalized wavefunctions as ndarray.
     """
-    mass = _input_reader(filedir)[0]
-    x_min, x_max, npoint = _input_reader(filedir)[1]
+    x_min, x_max, npoint = interpdata[:]
     step = (x_max - x_min) / npoint
-    potx = _potential_interpolate(filedir)[1]
     coeff = 1 / (mass * step**2)
-    eigmin = _input_reader(filedir)[5]
-    eigmax = _input_reader(filedir)[6]
     # Calculation of the eigenvalues and wavefunctions
     maindia = np.array([])
     for val in enumerate(potx):
