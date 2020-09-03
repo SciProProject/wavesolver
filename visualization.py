@@ -4,10 +4,36 @@ import matplotlib.pyplot as plt
 
 
 def run():
-    visualization()
+    scaling = input("Do you want to scale your axes manually? [y/n] ")
+    
+    if scaling == 'y':
+        
+        scalingy = input("Do you want to scale the y-axis? [y/n] ")
+        if scalingy == 'y':
+            yMin = input("What do you want as lower end for the y-axis? ")
+            yMin = float(yMin)
+            yMax = input("What do you want as top end for the y-axis? ")
+            yMax = float(yMax)
+            pary = [yMin, yMax]
+            
+        scalingx = input("Do you want to scale the x-axis? [y/n] ")
+        if scalingx == 'y':
+            xMin = input("What do you want as lower end for the x-axis? ")
+            xMin = float(xMin)
+            xMax = input("What do you want as top end for the x-axis? ")
+            xMax = float(xMax)
+            parx = [xMin, xMax]
+        
+        visualization(pary, parx)
+    
+    if scaling == 'n':
+        
+        visualization()
+        
+    
 
 
-def visualization():
+def visualization(pary=None, parx=None):
     eigv = np.loadtxt('output/energies.dat')
     pot = np.loadtxt('output/potential.dat')
     wavef = np.loadtxt('output/wavefuncs.dat')
@@ -34,9 +60,15 @@ def visualization():
         ax1.plot(eigval[:, 0], eigval[:,i+1], color = 'grey', alpha = 0.5)
         ax1.plot(wavef[:, 0], wavef[:, i+1])
     
+    if pary:
+        ax1.set_ylim(pary[0], pary[1])
+    if parx:
+        ax1.set_xlim(parx[0], parx[1])
+
     ax1.set_xlabel('x [Bohr]')
     ax1.set_ylabel('Energy [Hartree]')
     ax1.set_title(r'Potential, eigenstates, $\langle x \rangle$')
+    
     
     plt.show()
     
