@@ -9,7 +9,8 @@ import numpy as np
 def run(filedir):
     mass, interpdata, methode, potar, eigmin, eigmax, nump = _input_reader(filedir)[:]
     x_val, potx = _potential_interpolate(interpdata, methode, potar)
-    eigval, normwf = _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax)
+    eigval, normwf = _schroedinger_equation_solver(mass, interpdata,
+                                                   potx, eigmin, eigmax)
     mat = np.empty((len(x_val), 2))
     mat[:, 0] = x_val
     mat[:, 1] = potx
@@ -36,26 +37,25 @@ def _input_reader(filedir):
            mass, interpdata, methode, potar, eigmin, eigmax and
            nump used in solving the schroedinger equation.
     """
-    data = np.genfromtxt(filedir, dtype = str, delimiter = "/n")
-    
+    data = np.genfromtxt(filedir, dtype=str, delimiter="/n")
     mass = data[0].astype(np.float)
     x_min, x_max, npoint = data[1].split(' ')
     x_min = float(x_min)
     x_max = float(x_max)
     npoint = int(npoint)
     interpdata = [x_min, x_max, npoint]
-    eigmin, eigmax = data[2].split(' ') 
+    eigmin, eigmax = data[2].split(' ')
     eigmin = int(eigmin)
     eigmax = int(eigmax)
     methode = data[3]
     nump = data[4]
     nump = int(nump)
-    potar = np.empty((nump, 2), dtype = float)
+    potar = np.empty((nump, 2), dtype=float)
     for i in range(0, nump):
         x_inp, pot = data[5+i].split(' ')
-        potar[i,0] = x_inp
-        potar[i,1] = pot
-    
+        potar[i, 0] = x_inp
+        potar[i, 1] = pot
+
     return mass, interpdata, methode, potar, eigmin, eigmax, nump
 
 
@@ -71,15 +71,15 @@ def _potential_interpolate(interpdata, methode, potar):
         the interpolated potentials and their x values as ndarray.
     """
     if methode == "linear":
-        func = si.interp1d(potar[:,0], potar[:,1])
+        func = si.interp1d(potar[:, 0], potar[:, 1])
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     if methode == "cspline":
-        func = si.CubicSpline(potar[:,0], potar[:,1])
+        func = si.CubicSpline(potar[:, 0], potar[:, 1])
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     if methode == "polynomial":
-        func = si.KroghInterpolator(potar[:,0], potar[:,1])
+        func = si.KroghInterpolator(potar[:, 0], potar[:, 1])
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     return x_val, potx
@@ -112,4 +112,4 @@ def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
     for i in range(len(wavef[0])):
         norm = step * sum(wavef[:, i]**2)
         normwf[:, i] = wavef[:, i] / norm**0.5
-    return eigval, normwf
+    return eigval, wavef
