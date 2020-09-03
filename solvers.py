@@ -20,10 +20,15 @@ def run(filedir):
     for i, val in enumerate(np.transpose(normwf)):
         mat2[:, i + 1] = val
     np.savetxt("output/wavefuncs.dat", mat2)
-    mat3 = np.empty((len(eigval), 1))
+    mat3 = np.empty((len(eigval), 1))#
     for i, val in enumerate(eigval):
         mat3[i] = val
     np.savetxt("output/energies.dat", mat3)
+    mat4 = np.empty((len(eigval), 2))
+    expx, sigma = expected_values(interpdata, normwf, x_val)
+    mat4[:, 0] = expx
+    mat4[:, 1] = sigma
+    np.savetxt("output/expvalues.dat", mat4)
 
 
 def _input_reader(filedir):
@@ -95,7 +100,7 @@ def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
     Returns:
         Eigenvalues and their normalized wavefunctions as ndarray.
     """
-    x_min, x_max, npoint = interpdata[:]
+    x_min, x_max, npoint = interpdata
     step = (x_max - x_min) / npoint
     coeff = 1 / (mass * step**2)
     # Calculation of the eigenvalues and wavefunctions
@@ -112,4 +117,17 @@ def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
     for i in range(len(wavef[0])):
         norm = step * sum(wavef[:, i]**2)
         normwf[:, i] = wavef[:, i] / norm**0.5
-    return eigval, wavef
+    return eigval, normwf
+
+def expected_values(interpdata, normwf, x_val):
+    x_min, x_max, npoint = interpdata
+    step = (x_max - x_min) / npoint
+    expxlist = []
+    sigma = []
+    for i, val in enumerate(normwf[0, :]):
+        expx = step * sum(normwf[:, i] * x_val * normwf[:, i])
+        expx2 = step * sum(normwf[:, i] * x_val**2 * normwf[:, i])
+        expxlist.append(expx)
+        sigma.append((expx2 - expx**2)**0.5)
+    return expxlist, sigma
+

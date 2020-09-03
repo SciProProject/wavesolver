@@ -37,10 +37,11 @@ def visualization(pary=None, parx=None):
     eigv = np.loadtxt('output/energies.dat')
     pot = np.loadtxt('output/potential.dat')
     wavef = np.loadtxt('output/wavefuncs.dat')
-    #expv = np.loadtxt('output/expvalues.dat')
+    expv = np.loadtxt('output/expvalues.dat')
 
 
     scal = 1 / (eigv[-1] + 1)
+
 
     for i, val in enumerate(eigv):
         b = wavef[:, i+1] * scal + val
@@ -60,7 +61,7 @@ def visualization(pary=None, parx=None):
     for i in range(0,len(eigv)):
         ax1.plot(eigval[:, 0], eigval[:,i+1], color='grey', alpha=0.5)
         ax1.plot(wavef[:, 0], wavef[:, i+1])
-        #ax1.plot(expv[i, 0], eigv[i, 0], color='green', marker='x')
+        ax1.plot(expv[i, 0], eigv[i], color='green', marker='x')
 
     if pary:
         ax1.set_ylim(pary[0], pary[1])
@@ -74,8 +75,10 @@ def visualization(pary=None, parx=None):
 
     for i in range(0,len(eigv)):
         ax2.plot(eigval[:, 0], eigval[:,i+1], color = 'grey', alpha = 0.5)
-        #ax2.plot(expv[i, 1], eigv[i, 0], color='magenta', marker='+')
+        ax2.plot(expv[i, 1], eigv[i], color='magenta', marker='+', markersize=12)
 
+    sigmax = np.max(expv[:, 1]) + 0.1
+    ax2.set_xlim(0, sigmax)
     ax2.set_xlabel('[Bohr]')
     ax2.set_title('$\sigma_{x}$')
 

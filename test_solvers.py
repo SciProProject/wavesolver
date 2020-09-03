@@ -1,13 +1,15 @@
+#!/usr/bin/env python3
 """Contains tests for solvers module"""
 import pytest
 import numpy as np
 import solvers as sol
 import visualization as vis
+import matplotlib.pyplot as plt
 
 FILES = ["test_infpot.txt", "test_harmonic.txt", "test_pot.txt",
          "test_dualpot_lin.txt", "test_dualpot_scpline.txt",
          "test_asympot.txt"]
-ERROR = 1e-2
+ERROR = 5e-3
 
 
 @pytest.mark.parametrize("file", FILES)
@@ -26,14 +28,14 @@ def test_eigval(file):
         for n in range(eigmin - 1, eigmax):
             eigval = 1 / 2 * (n + 1 / 2)
             eigvallist.append(eigval)
-#    elif file == "test_pot.txt":
-#        eigvallist = np.ones((1, eigmax - eigmin + 1))
-#    elif file == "test_dualpot_lin.txt":
-#        eigvallist = np.ones((1, eigmax - eigmin + 1))
-#    elif file == "test_dualpot_scpline.txt":
-#        eigvallist = np.ones((1, eigmax - eigmin + 1))
-#    elif file == "test_asympot.txt":
-#        eigvallist = np.ones((1, eigmax - eigmin + 1))
+    elif file == "test_pot.txt":
+        eigvallist = np.loadtxt("__unittestfiles__/test_pot_energy.dat")
+    elif file == "test_dualpot_lin.txt":
+        eigvallist = np.loadtxt("__unittestfiles__/test_dualpot_lin_energy.dat")
+    elif file == "test_dualpot_scpline.txt":
+        eigvallist = np.loadtxt("__unittestfiles__/test_dualpot_scpline_energy.dat")
+    elif file == "test_asympot.txt":
+        eigvallist = np.loadtxt("__unittestfiles__/test_asympot_energy.dat")
     else:
         eigvallist = np.ones((1, eigmax - eigmin + 1))
     eigvalarray = np.array(eigvallist)
@@ -63,17 +65,17 @@ def test_wavefunc(file):
                 for val in enumerate(x_vals):
                     wavefunc = np.sqrt(2 / L) * np.cos(n * np.pi / L * val[1])
                     wavefuncs.append(wavefunc)
-            wavefuncsmat[:, n - 1] = wavefunc
+            wavefuncsmat[:, n - 1] = wavefuncs
     elif file == "test_harmonic.txt":
-        wavefuncsmat = np.loadtxt("__unittestfiles__/test_harmonic.txt")[:, 1:]
+        wavefuncsmat = np.loadtxt("__unittestfiles__/test_harmonic_wf.dat")[:, 1:]
     elif file == "test_pot.txt":
-        wavefuncsmat = np.loadtxt("__unittestfiles__/test_pot.txt")[:, 1:]
+        wavefuncsmat = np.loadtxt("__unittestfiles__/test_pot_wf.dat")[:, 1:]
     elif file == "test_dualpot_lin.txt":
-        wavefuncsmat = np.loadtxt("__unittestfiles__/test_dualpot_lin.txt")[:, 1:]
+        wavefuncsmat = np.loadtxt("__unittestfiles__/test_dualpot_lin_wf.dat")[:, 1:]
     elif file == "test_dualpot_scpline.txt":
-        wavefuncsmat = np.loadtxt("__unittestfiles__/test_dualpot_scpline.txt")[:, 1:]
+        wavefuncsmat = np.loadtxt("__unittestfiles__/test_dualpot_scpline_wf.dat")[:, 1:]
     elif file == "test_asympot.txt":
-        wavefuncsmat = np.loadtxt("__unittestfiles__/test_asympot.txt")[:, 1:]
+        wavefuncsmat = np.loadtxt("__unittestfiles__/test_asympot_wf.dat")[:, 1:]
     else:
         wavefuncsmat = np.ones((len(x_vals), eigmax - eigmin + 1))
     sol.run(filedir)
@@ -84,14 +86,17 @@ def test_wavefunc(file):
 def _creat_testdata(file):
     filedir = "testfiles/" + file
     sol.run(filedir)
-    vis.visualizer()
-    check = input("Should this data be used as testdata (input Y or N).")
-    if check == "Y":
+    vis.run()
+    plt.pause(5)
+    check = input("Should this data be used as testdata [y/n].")
+    if check == "y":
         newdirwf = "__unittestfiles__/" + file.split(".")[0] + "_wf.dat"
         newdirenergy = "__unittestfiles__/" + file.split(".")[0] + "_energy.dat"
         testdatawf = np.loadtxt("output/wavefuncs.dat")
         np.savetxt(newdirwf, testdatawf)
         testdataenergy = np.loadtxt("output/energies.dat")
         np.savetxt(newdirenergy, testdataenergy)
-    if check == "N":
+        plt.close('all')
+    if check == "n":
+        plt.close('all')
         return None
