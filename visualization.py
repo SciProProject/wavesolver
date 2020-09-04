@@ -10,20 +10,28 @@ def run():
         scalingy = input("Do you want to scale the y-axis? [y/n] ")
         if scalingy == 'y':
             yMin = input("What do you want as lower end for the y-axis? ")
-            yMin = float(yMin)
             yMax = input("What do you want as top end for the y-axis? ")
-            yMax = float(yMax)
-            pary = [yMin, yMax]
+            try:
+                yMin = float(yMin)
+                yMax = float(yMax)
+                pary = [yMin, yMax]
+            except:
+                raise TypeError("""Your inputs {}, {} could not
+be converted into float""".format(yMin, yMax))
         else:
             pary = None
 
         scalingx = input("Do you want to scale the x-axis? [y/n] ")
         if scalingx == 'y':
             xMin = input("What do you want as lower end for the x-axis? ")
-            xMin = float(xMin)
             xMax = input("What do you want as top end for the x-axis? ")
-            xMax = float(xMax)
-            parx = [xMin, xMax]
+            try:
+                xMin = float(xMin)
+                xMax = float(xMax)
+                parx = [xMin, xMax]
+            except:
+                raise TypeError("""Your inputs {}, {} could not
+be converted into float""".format(xMin, xMax))
         else:
             parx = None
 
@@ -34,11 +42,13 @@ def run():
 
 
 def visualization(pary=None, parx=None):
-    eigv = np.loadtxt('output/energies.dat')
-    pot = np.loadtxt('output/potential.dat')
-    wavef = np.loadtxt('output/wavefuncs.dat')
-    expv = np.loadtxt('output/expvalues.dat')
-
+    try:
+        eigv = np.loadtxt('output/energies.dat')
+        pot = np.loadtxt('output/potential.dat')
+        wavef = np.loadtxt('output/wavefuncs.dat')
+        expv = np.loadtxt('output/expvalues.dat')
+    except:
+        raise FileNotFoundError("""Data was not found.""")
 
     scal = 1 / (eigv[-1] + 1)
     for i, val in enumerate(eigv):
@@ -59,7 +69,8 @@ def visualization(pary=None, parx=None):
     for i in range(0,len(eigv)):
         ax1.plot(eigval[:, 0], eigval[:,i+1], color='grey', alpha=0.5)
         ax1.plot(wavef[:, 0], wavef[:, i+1])
-        ax1.plot(expv[i, 0], eigv[i], color='green', marker='x', markersize=12)
+        ax1.plot(expv[i, 0], eigv[i], color='green', marker='x',\
+                 markersize=12, markeredgewidth=1.5)
 
     if pary:
         ax1.set_ylim(pary[0], pary[1])
@@ -73,9 +84,10 @@ def visualization(pary=None, parx=None):
 
     for i in range(0,len(eigv)):
         ax2.plot(eigval[:, 0], eigval[:,i+1], color = 'grey', alpha = 0.5)
-        ax2.plot(expv[i, 1], eigv[i], color='magenta', marker='+', markersize=12)
+        ax2.plot(expv[i, 1], eigv[i], color='magenta',\
+                 marker='+', markersize=15, markeredgewidth=2)
 
-    sigmax = np.max(expv[:, 1]) + 0.1
+    sigmax = np.max(expv[:, 1]) + 0.05 + 0.01 * np.max(expv[:, 1])
     ax2.set_xlim(0, sigmax)
     ax2.set_xlabel('[Bohr]')
     ax2.set_title('$\sigma_{x}$')
