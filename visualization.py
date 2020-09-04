@@ -41,8 +41,6 @@ def visualization(pary=None, parx=None):
 
 
     scal = 1 / (eigv[-1] + 1)
-
-
     for i, val in enumerate(eigv):
         b = wavef[:, i+1] * scal + val
         wavef[:, i+1] = b
@@ -61,7 +59,7 @@ def visualization(pary=None, parx=None):
     for i in range(0,len(eigv)):
         ax1.plot(eigval[:, 0], eigval[:,i+1], color='grey', alpha=0.5)
         ax1.plot(wavef[:, 0], wavef[:, i+1])
-        ax1.plot(expv[i, 0], eigv[i], color='green', marker='x')
+        ax1.plot(expv[i, 0], eigv[i], color='green', marker='x', markersize=12)
 
     if pary:
         ax1.set_ylim(pary[0], pary[1])

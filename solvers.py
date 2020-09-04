@@ -7,28 +7,17 @@ import numpy as np
 
 
 def run(filedir):
-    mass, interpdata, methode, potar, eigmin, eigmax, nump = _input_reader(filedir)[:]
-    x_val, potx = _potential_interpolate(interpdata, methode, potar)
+    mass, interpdata, methode,\
+        potar, eigmin, eigmax, nump = _input_reader(filedir)[:]
+    potential = _potential_interpolate(interpdata, methode, potar)
     eigval, normwf = _schroedinger_equation_solver(mass, interpdata,
-                                                   potx, eigmin, eigmax)
-    mat = np.empty((len(x_val), 2))
-    mat[:, 0] = x_val
-    mat[:, 1] = potx
-    np.savetxt("output/potential.dat", mat)
-    mat2 = np.empty((len(x_val), len(eigval) + 1))
-    mat2[:, 0] = x_val
-    for i, val in enumerate(np.transpose(normwf)):
-        mat2[:, i + 1] = val
-    np.savetxt("output/wavefuncs.dat", mat2)
-    mat3 = np.empty((len(eigval), 1))#
-    for i, val in enumerate(eigval):
-        mat3[i] = val
-    np.savetxt("output/energies.dat", mat3)
-    mat4 = np.empty((len(eigval), 2))
-    expx, sigma = expected_values(interpdata, normwf, x_val)
-    mat4[:, 0] = expx
-    mat4[:, 1] = sigma
-    np.savetxt("output/expvalues.dat", mat4)
+                                                   potential, eigmin, eigmax)
+    expvalues = expected_values(interpdata, normwf[:, 1:],
+                                  potential[:, 0], eigval)
+    np.savetxt("output/potential.dat", potential)
+    np.savetxt("output/wavefuncs.dat", normwf)
+    np.savetxt("output/energies.dat", np.array(eigval))
+    np.savetxt("output/expvalues.dat", expvalues)
 
 
 def _input_reader(filedir):
@@ -42,7 +31,12 @@ def _input_reader(filedir):
            mass, interpdata, methode, potar, eigmin, eigmax and
            nump used in solving the schroedinger equation.
     """
-    data = np.genfromtxt(filedir, dtype=str, delimiter="/n")
+    try:
+        data = np.genfromtxt(filedir, dtype=str, delimiter="/n")
+    except:
+        raise FileNotFoundError("""Check the the given file directory
+{}
+and make sure it leads to the right file""".format(filedir))
     mass = data[0].astype(np.float)
     x_min, x_max, npoint = data[1].split(' ')
     x_min = float(x_min)
@@ -79,18 +73,25 @@ def _potential_interpolate(interpdata, methode, potar):
         func = si.interp1d(potar[:, 0], potar[:, 1])
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
-    if methode == "cspline":
-        func = si.CubicSpline(potar[:, 0], potar[:, 1])
+    elif methode == "cspline":
+        func = si.CubicSpline(potar[:, 0], potar[:, 1], bc_type='natural')
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
-    if methode == "polynomial":
+    elif methode == "polynomial":
         func = si.KroghInterpolator(potar[:, 0], potar[:, 1])
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
-    return x_val, potx
+    else:
+        raise TypeError("""Your method {} was not understood,
+choose from [linear, cspline, polynomial]""".format(methode))
+
+    potential = np.empty((len(x_val), 2))
+    potential[:, 0] = x_val
+    potential[:, 1] = potx
+    return potential
 
 
-def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
+def _schroedinger_equation_solver(mass, interpdata, potential, eigmin, eigmax):
     """Solves the schroedingerequation from a given set of potentials.
 
     Args:
@@ -102,6 +103,7 @@ def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
     """
     x_min, x_max, npoint = interpdata
     step = (x_max - x_min) / npoint
+    potx = potential[:, 1]
     coeff = 1 / (mass * step**2)
     # Calculation of the eigenvalues and wavefunctions
     maindia = np.array([])
@@ -113,13 +115,17 @@ def _schroedinger_equation_solver(mass, interpdata, potx, eigmin, eigmax):
                                         'i', (eigmin - 1, eigmax - 1),
                                         True, 0.0, 'stebz')
     # Normalization of the wavefunctions
-    normwf = np.empty((len(wavef), len(eigval)))
+    normw = np.empty((len(wavef), len(eigval)))
     for i in range(len(wavef[0])):
         norm = step * sum(wavef[:, i]**2)
-        normwf[:, i] = wavef[:, i] / norm**0.5
+        normw[:, i] = wavef[:, i] / norm**0.5
+    normwf = np.empty((len(potential[:, 0]), len(eigval) + 1))
+    normwf[:, 0] = potential[:, 0]
+    for i, val in enumerate(np.transpose(normw)):
+        normwf[:, i + 1] = val
     return eigval, normwf
 
-def expected_values(interpdata, normwf, x_val):
+def expected_values(interpdata, normwf, x_val, eigval):
     x_min, x_max, npoint = interpdata
     step = (x_max - x_min) / npoint
     expxlist = []
@@ -129,5 +135,8 @@ def expected_values(interpdata, normwf, x_val):
         expx2 = step * sum(normwf[:, i] * x_val**2 * normwf[:, i])
         expxlist.append(expx)
         sigma.append((expx2 - expx**2)**0.5)
-    return expxlist, sigma
+    expvalues = np.empty((len(eigval), 2))
+    expvalues[:, 0] = expxlist
+    expvalues[:, 1] = sigma
+    return expvalues
 
