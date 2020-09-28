@@ -4,18 +4,21 @@
 import scipy.linalg as sl
 import scipy.interpolate as si
 import numpy as np
+import os.path as op
 
 
-def run(filedir):
+def run(filedir, path):
     """Calculates the eigenvalues, wavefunctions, expected values and
        the interpolated potentials then returns the result in respectiv files.
 
        Args:
-           filedir: directory of the inputfile
+           filedir  directory of the inputfile
+           path  directory path where data will be stored.
 
        Returns:
            four files into the output folder
     """
+    # solving schroedinger equations and gathering data
     mass, interpdata, methode,\
         potar, eigmin, eigmax = input_reader(filedir)[:]
     potential = potential_interpolate(interpdata, methode, potar)
@@ -23,10 +26,13 @@ def run(filedir):
                                                   potential, eigmin, eigmax)
     expvalues = expected_values(interpdata, normwf[:, 1:],
                                 potential[:, 0], eigval)
-    np.savetxt("output/potential.dat", potential)
-    np.savetxt("output/wavefuncs.dat", normwf)
-    np.savetxt("output/energies.dat", np.array(eigval))
-    np.savetxt("output/expvalues.dat", expvalues)
+    # saving data to files
+    name_list = ["potential.dat", "wavefuncs.dat", "energies.dat",
+                 "expvalues.dat"]
+    data_list = [potential, normwf, np.array(eigval), expvalues]
+    for i, names in enumerate(name_list):
+        directory = op.join(path, names)
+        np.savetxt(directory, data_list[i])
 
 
 def input_reader(filedir):
@@ -34,7 +40,7 @@ def input_reader(filedir):
        the wavefunction in the solvers module.
 
        Args:
-           filedir: directory of the inputfile
+           filedir  directory of the inputfile
 
        Returns:
            mass, interpdata, methode, potar, eigmin, eigmax
@@ -72,9 +78,9 @@ def potential_interpolate(interpdata, methode, potar):
        given set of potentails.
 
     Args:
-        interpdata -- list with range and number of points to interpolate
-        methode -- methode of interpolation (linear, cspline, polynomial)
-        potar -- 2darray of x and potential values
+        interpdata  list with range and number of points to interpolate
+        methode  methode of interpolation (linear, cspline, polynomial)
+        potar  2darray of x and potential values
 
     Returns:
         the interpolated potentials and their x values as ndarray.
@@ -106,11 +112,11 @@ def schroedinger_equation_solver(mass, interpdata, potential, eigmin, eigmax):
     """Solves the schroedingerequation from a given set of potentials.
 
     Args:
-        mass -- Mass of the partical
-        interpdata -- list with range and number of points to interpolate
-        potential -- 2darray of x and potential values after interpolation
-        eigmin -- minimal amount of calculated Eigenvalues
-        eigmax -- maximum amount of calculatzed Eigenvalues
+        mass  Mass of the partical
+        interpdata  list with range and number of points to interpolate
+        potential  2darray of x and potential values after interpolation
+        eigmin  minimal amount of calculated Eigenvalues
+        eigmax  maximum amount of calculatzed Eigenvalues
 
     Returns:
         Eigenvalues and their normalized wavefunctions as ndarray.
@@ -145,19 +151,20 @@ def expected_values(interpdata, normwf, x_val, eigval):
        wavefunctions, eigenenergies and potentials.
 
     Args:
-        interpdata -- list with range and number of points to interpolate
-        normwf -- ndarray of wavefunctions
-        x_val -- list of x values
-        eigval -- list of eigenenergies
+        interpdata  list with range and number of points to interpolate
+        normwf  ndarray of wavefunctions
+        x_val  list of x values
+        eigval  list of eigenenergies
 
     Returns:
-        expected x values and its standrt diviation for the respectiv
+        expected x values and its standard diviation for the respectiv
         wavefunctions.
     """
     x_min, x_max, npoint = interpdata
     step = (x_max - x_min) / npoint
     expxlist = []
     sigma = []
+    # Calculating expected values and standard deviation
     for val in enumerate(normwf[0, :]):
         pos = val[0]
         expx = step * sum(normwf[:, pos] * x_val * normwf[:, pos])

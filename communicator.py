@@ -11,9 +11,11 @@ def main():
     """
     filedir = input('Please input the directory of the file with the data. ')
 
-    solvers.run(filedir)
+    path = input("""Please inpute the directory where you
+want to save the files.""")
+    solvers.run(filedir, path)
 
-    visualization.run()
+    visualization.run(path)
 
 
 if __name__ == '__main__':

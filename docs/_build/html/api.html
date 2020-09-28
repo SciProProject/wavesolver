@@ -1,0 +1,262 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>WavefuncsSolver API &#8212; WavefuncSolver 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to WavefuncSolver’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="wavefuncssolver-api">
+<h1>WavefuncsSolver API<a class="headerlink" href="#wavefuncssolver-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-solvers">
+<span id="solvers"></span><h2>Solvers<a class="headerlink" href="#module-solvers" title="Permalink to this headline">¶</a></h2>
+<p>Module used to solve onedimensional timeindependent Schroedinger equations
+using a set of data from a given file.</p>
+<dl class="function">
+<dt id="solvers.expected_values">
+<code class="descclassname">solvers.</code><code class="descname">expected_values</code><span class="sig-paren">(</span><em>interpdata</em>, <em>normwf</em>, <em>x_val</em>, <em>eigval</em><span class="sig-paren">)</span><a class="headerlink" href="#solvers.expected_values" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the expected values for the given</dt>
+<dd>wavefunctions, eigenenergies and potentials.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>list with range and number of points to interpolate</strong> (<em>interpdata</em>) – </li>
+<li><strong>ndarray of wavefunctions</strong> (<em>normwf</em>) – </li>
+<li><strong>list of x values</strong> (<em>x_val</em>) – </li>
+<li><strong>list of eigenenergies</strong> (<em>eigval</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">expected x values and its standard diviation for the respectiv
+wavefunctions.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="solvers.input_reader">
+<code class="descclassname">solvers.</code><code class="descname">input_reader</code><span class="sig-paren">(</span><em>filedir</em><span class="sig-paren">)</span><a class="headerlink" href="#solvers.input_reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects data from the file the user iputs whitch is used to solve
+the wavefunction in the solvers module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>directory of the inputfile</strong> (<em>filedir</em>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mass, interpdata, methode, potar, eigmin, eigmax
+used in solving the schroedinger equation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="solvers.potential_interpolate">
+<code class="descclassname">solvers.</code><code class="descname">potential_interpolate</code><span class="sig-paren">(</span><em>interpdata</em>, <em>methode</em>, <em>potar</em><span class="sig-paren">)</span><a class="headerlink" href="#solvers.potential_interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>interpolates the potentail for a new range of x values from a</dt>
+<dd>given set of potentails.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>list with range and number of points to interpolate</strong> (<em>interpdata</em>) – </li>
+<li><strong>methode of interpolation</strong> (<em>methode</em>) – </li>
+<li><strong>2darray of x and potential values</strong> (<em>potar</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the interpolated potentials and their x values as ndarray.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="solvers.run">
+<code class="descclassname">solvers.</code><code class="descname">run</code><span class="sig-paren">(</span><em>filedir</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#solvers.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the eigenvalues, wavefunctions, expected values and
+the interpolated potentials then returns the result in respectiv files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>directory of the inputfile</strong> (<em>filedir</em>) – </li>
+<li><strong>directory path where data will be stored.</strong> (<em>path</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">four files into the output folder</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="solvers.schroedinger_equation_solver">
+<code class="descclassname">solvers.</code><code class="descname">schroedinger_equation_solver</code><span class="sig-paren">(</span><em>mass</em>, <em>interpdata</em>, <em>potential</em>, <em>eigmin</em>, <em>eigmax</em><span class="sig-paren">)</span><a class="headerlink" href="#solvers.schroedinger_equation_solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solves the schroedingerequation from a given set of potentials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Mass of the partical</strong> (<em>mass</em>) – </li>
+<li><strong>list with range and number of points to interpolate</strong> (<em>interpdata</em>) – </li>
+<li><strong>2darray of x and potential values after interpolation</strong> (<em>potential</em>) – </li>
+<li><strong>minimal amount of calculated Eigenvalues</strong> (<em>eigmin</em>) – </li>
+<li><strong>maximum amount of calculatzed Eigenvalues</strong> (<em>eigmax</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Eigenvalues and their normalized wavefunctions as ndarray.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-visualization">
+<span id="visualization"></span><h2>Visualization<a class="headerlink" href="#module-visualization" title="Permalink to this headline">¶</a></h2>
+<p>Visualization of the data retrived by the solvers module.</p>
+<dl class="function">
+<dt id="visualization.run">
+<code class="descclassname">visualization.</code><code class="descname">run</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#visualization.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface for user to define plot ranges and scaling and visualizes
+data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>directory path form whitch to use data</strong> (<em>path</em>) – </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="visualization.visualization">
+<code class="descclassname">visualization.</code><code class="descname">visualization</code><span class="sig-paren">(</span><em>path</em>, <em>pary=None</em>, <em>parx=None</em><span class="sig-paren">)</span><a class="headerlink" href="#visualization.visualization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualizes the wavefunctions and eigenenergies for a given potential
+as well as the expected x values in a graph as well as the diviations
+of the x values. The solvers output files are being used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory path form whitch to use data</strong> (<em>path</em>) – </li>
+<li><strong>tuple disclosing the range of the y-axis</strong> (<em>pary</em>) – </li>
+<li><strong>tuple disclosing the range of the x-axis</strong> (<em>parx</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-communicator">
+<span id="communicator"></span><h2>Communicator<a class="headerlink" href="#module-communicator" title="Permalink to this headline">¶</a></h2>
+<p>Retrives data for the solvers module from the files given by the user.</p>
+<dl class="function">
+<dt id="communicator.main">
+<code class="descclassname">communicator.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#communicator.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solves the Schrödingerequation from a file containing data and outputs
+files with the eigenenergies, wavefunctions, interpolated potentials
+and expected values also visualizing the solution.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to WavefuncSolver’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Mike Pfannenstiel.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
