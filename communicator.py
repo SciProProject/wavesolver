@@ -3,12 +3,18 @@
 import solvers
 import visualization
 
+
 def main():
+    """Solves the Schrödingerequation from a file containing data and outputs
+       files with the eigenenergies, wavefunctions, interpolated potentials
+       and expected values also visualizing the solution.
+    """
     filedir = input('Please input the directory of the file with the data. ')
 
     solvers.run(filedir)
 
     visualization.run()
+
 
 if __name__ == '__main__':
     main()

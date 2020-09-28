@@ -7,20 +7,29 @@ import numpy as np
 
 
 def run(filedir):
+    """Calculates the eigenvalues, wavefunctions, expected values and
+       the interpolated potentials then returns the result in respectiv files.
+
+       Args:
+           filedir: directory of the inputfile
+
+       Returns:
+           four files into the output folder
+    """
     mass, interpdata, methode,\
-        potar, eigmin, eigmax, nump = _input_reader(filedir)[:]
-    potential = _potential_interpolate(interpdata, methode, potar)
-    eigval, normwf = _schroedinger_equation_solver(mass, interpdata,
-                                                   potential, eigmin, eigmax)
+        potar, eigmin, eigmax = input_reader(filedir)[:]
+    potential = potential_interpolate(interpdata, methode, potar)
+    eigval, normwf = schroedinger_equation_solver(mass, interpdata,
+                                                  potential, eigmin, eigmax)
     expvalues = expected_values(interpdata, normwf[:, 1:],
-                                  potential[:, 0], eigval)
+                                potential[:, 0], eigval)
     np.savetxt("output/potential.dat", potential)
     np.savetxt("output/wavefuncs.dat", normwf)
     np.savetxt("output/energies.dat", np.array(eigval))
     np.savetxt("output/expvalues.dat", expvalues)
 
 
-def _input_reader(filedir):
+def input_reader(filedir):
     """Collects data from the file the user iputs whitch is used to solve
        the wavefunction in the solvers module.
 
@@ -28,8 +37,8 @@ def _input_reader(filedir):
            filedir: directory of the inputfile
 
        Returns:
-           mass, interpdata, methode, potar, eigmin, eigmax and
-           nump used in solving the schroedinger equation.
+           mass, interpdata, methode, potar, eigmin, eigmax
+           used in solving the schroedinger equation.
     """
     try:
         data = np.genfromtxt(filedir, dtype=str, delimiter="/n")
@@ -55,16 +64,17 @@ and make sure it leads to the right file""".format(filedir))
         potar[i, 0] = x_inp
         potar[i, 1] = pot
 
-    return mass, interpdata, methode, potar, eigmin, eigmax, nump
+    return mass, interpdata, methode, potar, eigmin, eigmax
 
 
-def _potential_interpolate(interpdata, methode, potar):
+def potential_interpolate(interpdata, methode, potar):
     """interpolates the potentail for a new range of x values from a
        given set of potentails.
 
     Args:
-        datalist = list created by the communicator modul function
-        input_reader.
+        interpdata -- list with range and number of points to interpolate
+        methode -- methode of interpolation (linear, cspline, polynomial)
+        potar -- 2darray of x and potential values
 
     Returns:
         the interpolated potentials and their x values as ndarray.
@@ -74,7 +84,8 @@ def _potential_interpolate(interpdata, methode, potar):
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     elif methode == "cspline":
-        func = si.CubicSpline(potar[:, 0], potar[:, 1], bc_type='natural')
+        func = si.CubicSpline(potar[:, 0], potar[:, 1], bc_type='natural',
+                              extrapolate=True)
         x_val = np.linspace(interpdata[0], interpdata[1], interpdata[2])
         potx = func(x_val)
     elif methode == "polynomial":
@@ -91,12 +102,15 @@ choose from [linear, cspline, polynomial]""".format(methode))
     return potential
 
 
-def _schroedinger_equation_solver(mass, interpdata, potential, eigmin, eigmax):
+def schroedinger_equation_solver(mass, interpdata, potential, eigmin, eigmax):
     """Solves the schroedingerequation from a given set of potentials.
 
     Args:
-        datalist = list created by the communicator modul function
-        input_reader.
+        mass -- Mass of the partical
+        interpdata -- list with range and number of points to interpolate
+        potential -- 2darray of x and potential values after interpolation
+        eigmin -- minimal amount of calculated Eigenvalues
+        eigmax -- maximum amount of calculatzed Eigenvalues
 
     Returns:
         Eigenvalues and their normalized wavefunctions as ndarray.
@@ -113,7 +127,7 @@ def _schroedinger_equation_solver(mass, interpdata, potential, eigmin, eigmax):
     offdia = np.full(len(potx) - 1, -coeff / 2)
     eigval, wavef = sl.eigh_tridiagonal(maindia, offdia, False,
                                         'i', (eigmin - 1, eigmax - 1),
-                                        True, 0.0, 'stebz')
+                                        True, 0.0, 'auto')
     # Normalization of the wavefunctions
     normw = np.empty((len(wavef), len(eigval)))
     for i in range(len(wavef[0])):
@@ -125,18 +139,32 @@ def _schroedinger_equation_solver(mass, interpdata, potential, eigmin, eigmax):
         normwf[:, i + 1] = val
     return eigval, normwf
 
+
 def expected_values(interpdata, normwf, x_val, eigval):
+    """Calculates the expected values for the given
+       wavefunctions, eigenenergies and potentials.
+
+    Args:
+        interpdata -- list with range and number of points to interpolate
+        normwf -- ndarray of wavefunctions
+        x_val -- list of x values
+        eigval -- list of eigenenergies
+
+    Returns:
+        expected x values and its standrt diviation for the respectiv
+        wavefunctions.
+    """
     x_min, x_max, npoint = interpdata
     step = (x_max - x_min) / npoint
     expxlist = []
     sigma = []
-    for i, val in enumerate(normwf[0, :]):
-        expx = step * sum(normwf[:, i] * x_val * normwf[:, i])
-        expx2 = step * sum(normwf[:, i] * x_val**2 * normwf[:, i])
+    for val in enumerate(normwf[0, :]):
+        pos = val[0]
+        expx = step * sum(normwf[:, pos] * x_val * normwf[:, pos])
+        expx2 = step * sum(normwf[:, pos] * x_val**2 * normwf[:, pos])
         expxlist.append(expx)
         sigma.append((expx2 - expx**2)**0.5)
     expvalues = np.empty((len(eigval), 2))
     expvalues[:, 0] = expxlist
     expvalues[:, 1] = sigma
     return expvalues
-
